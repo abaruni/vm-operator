@@ -5,12 +5,23 @@
 package virtualmachinepublishrequest
 
 import (
+	"fmt"
+	
 	ctrlmgr "sigs.k8s.io/controller-runtime/pkg/manager"
 
 	pkgctx "github.com/vmware-tanzu/vm-operator/pkg/context"
+	"github.com/vmware-tanzu/vm-operator/webhooks/virtualmachinepublishrequest/mutation"
 	"github.com/vmware-tanzu/vm-operator/webhooks/virtualmachinepublishrequest/validation"
 )
 
 func AddToManager(ctx *pkgctx.ControllerManagerContext, mgr ctrlmgr.Manager) error {
-	return validation.AddToManager(ctx, mgr)
+	if err := mutation.AddToManager(ctx, mgr); err != nil {
+		return fmt.Errorf("failed to initialize mutation webhook: %w", err)
+	}
+
+	if err := validation.AddToManager(ctx, mgr); err != nil {
+		return fmt.Errorf("failed to initialize validation webhook: %w", err)
+	}
+
+	return nil
 }
